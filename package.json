@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/MateCon/golf-today/issues"
   },
-  "homepage": "https://github.com/MateCon/golf-today#readme"
+  "homepage": "https://github.com/MateCon/golf-today#readme",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
 }

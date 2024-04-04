@@ -10,7 +10,7 @@ let canvas, context, mousePos, tilePos, level;
 
 let editorType = "Wall";
 
-fetch("levels/1.json")
+fetch("levels/Tutorial.json")
     .then((res) => res.text())
     .then((text) => {
         level = JSON.parse(text);
@@ -89,7 +89,7 @@ const ball = {
             this.velocity.y *= -1;
         }
         
-        for (let block of level) {
+        for (let block of level.blocks) {
             if (this.position.x > block.position.x * TILE_SIZE - this.radius && 
                 this.position.x < block.position.x * TILE_SIZE + TILE_SIZE + this.radius &&
                 this.position.y > block.position.y * TILE_SIZE - this.radius && 
@@ -180,7 +180,7 @@ function draw() {
     }
 
     if (mode === "GAME") {
-        for (let block of level) {
+        for (let block of level.blocks) {
             ctx.fillStyle = Colors.WALL;
             ctx.fillRect(block.position.x * TILE_SIZE, block.position.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
@@ -196,7 +196,7 @@ function draw() {
             ctx.fillRect(tilePos.x * TILE_SIZE, tilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
 
-        for (let block of level) {
+        for (let block of level.blocks) {
             ctx.fillStyle = Colors[block.type.toUpperCase()];
             ctx.fillRect(block.position.x * TILE_SIZE, block.position.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
@@ -239,13 +239,13 @@ document.addEventListener("click", (e) => {
     ball.move(getMousePosition(e));
     
     if (mode === "EDITOR") {
-        for (let block of level) {
+        for (let block of level.blocks) {
             if (tilePos.x === block.position.x && tilePos.y === block.position.y) {
                 return;
             }
         }
 
-        level.push({
+        level.blocks.push({
             position: { x: tilePos.x, y: tilePos.y },
             type: editorType,
         });
@@ -256,7 +256,7 @@ document.addEventListener("contextmenu", (e) => {
     e.preventDefault();
 
     if (mode === "EDITOR") {
-        level = level.filter(block => tilePos.x != block.position.x || tilePos.y != block.position.y);
+        level.blocks = level.blocks.filter(block => tilePos.x != block.position.x || tilePos.y != block.position.y);
     }
 });
 
@@ -272,8 +272,16 @@ document.addEventListener("keypress", e => {
         case "h":
             editorType = "Hole";
             break;
-        case "1":
-            navigator.clipboard.writeText(JSON.stringify(level));
+        case "s":
+            fetch("http://localhost:8081/level", {
+                method: "POST",
+                mode: "cors",
+                body: JSON.stringify(level),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+            break;
         }
     }
 })
