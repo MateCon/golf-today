@@ -8,14 +8,12 @@ const Colors = {
 };
 let canvas, context, mousePos, tilePos, level;
 
-let editorBlocks = [], editorType = "Wall";
+let editorType = "Wall";
 
 fetch("levels/1.json")
     .then((res) => res.text())
     .then((text) => {
         level = JSON.parse(text);
-        editorBlocks = JSON.parse(text);
-        // editorBlocks = []
     })
     .catch((e) => console.error(e));
 
@@ -198,7 +196,7 @@ function draw() {
             ctx.fillRect(tilePos.x * TILE_SIZE, tilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
 
-        for (let block of editorBlocks) {
+        for (let block of level) {
             ctx.fillStyle = Colors[block.type.toUpperCase()];
             ctx.fillRect(block.position.x * TILE_SIZE, block.position.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
@@ -241,13 +239,13 @@ document.addEventListener("click", (e) => {
     ball.move(getMousePosition(e));
     
     if (mode === "EDITOR") {
-        for (let block of editorBlocks) {
+        for (let block of level) {
             if (tilePos.x === block.position.x && tilePos.y === block.position.y) {
                 return;
             }
         }
 
-        editorBlocks.push({
+        level.push({
             position: { x: tilePos.x, y: tilePos.y },
             type: editorType,
         });
@@ -258,7 +256,7 @@ document.addEventListener("contextmenu", (e) => {
     e.preventDefault();
 
     if (mode === "EDITOR") {
-        editorBlocks = editorBlocks.filter(block => tilePos.x != block.position.x || tilePos.y != block.position.y);
+        level = level.filter(block => tilePos.x != block.position.x || tilePos.y != block.position.y);
     }
 });
 
@@ -275,7 +273,7 @@ document.addEventListener("keypress", e => {
             editorType = "Hole";
             break;
         case "1":
-            navigator.clipboard.writeText(JSON.stringify(editorBlocks));
+            navigator.clipboard.writeText(JSON.stringify(level));
         }
     }
 })
