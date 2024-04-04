@@ -1,5 +1,5 @@
 const WIDTH = 640, HEIGHT = 360, FPS = 60, TILE_SIZE = 40;
-const mode = "GAME"; // EDITOR OR GAME
+const mode = "EDITOR"; // EDITOR OR GAME
 const Colors = {
     GRASS_LIGHT: "#7aba73",
     GRASS_DARK: "#54875c",
@@ -15,6 +15,7 @@ fetch("levels/1.json")
     .then((text) => {
         level = JSON.parse(text);
         editorBlocks = JSON.parse(text);
+        // editorBlocks = []
     })
     .catch((e) => console.error(e));
 
@@ -180,9 +181,11 @@ function draw() {
         }
     }
 
-    for (let block of level) {
-        ctx.fillStyle = Colors.WALL;
-        ctx.fillRect(block.position.x * TILE_SIZE, block.position.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    if (mode === "GAME") {
+        for (let block of level) {
+            ctx.fillStyle = Colors.WALL;
+            ctx.fillRect(block.position.x * TILE_SIZE, block.position.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
     }
 
     hole.draw();
@@ -207,6 +210,7 @@ function draw() {
 }
 
 function getMousePosition(e) {
+    if (!canvas) return;
     var rect = canvas.getBoundingClientRect();
 
     return {
@@ -250,6 +254,13 @@ document.addEventListener("click", (e) => {
     }
 });
 
+document.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+
+    if (mode === "EDITOR") {
+        editorBlocks = editorBlocks.filter(block => tilePos.x != block.position.x || tilePos.y != block.position.y);
+    }
+});
 
 document.addEventListener("keypress", e => {
     if (mode === "EDITOR") {
