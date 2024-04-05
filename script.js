@@ -1,5 +1,5 @@
-const WIDTH = 640, HEIGHT = 360, FPS = 60, TILE_SIZE = 40;
-const mode = "EDITOR"; // EDITOR OR GAME
+const TILE_SIZE = 40, WIDTH = 16 * TILE_SIZE, HEIGHT = 9 * TILE_SIZE, FPS = 60;
+const mode = "GAME"; // EDITOR OR GAME
 const Colors = {
     GRASS_LIGHT: "#7aba73",
     GRASS_DARK: "#54875c",
@@ -288,6 +288,9 @@ if (mode === "EDITOR") {
             break;
         case "h":
             editorType = "Hole";
+            break;
+        case "r":
+            level.blocks = [];
             break;
         case "s":
             fetch("http://localhost:8081/level", {
