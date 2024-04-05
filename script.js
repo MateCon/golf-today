@@ -8,7 +8,7 @@ const Colors = {
 };
 let canvas, context, mousePos, tilePos, level;
 
-let editorType = "Wall";
+let editorType = "Wall", editorHold = null, editorLastTilePos = null;
 
 fetch("levels/Tutorial.json")
     .then((res) => res.text())
@@ -116,7 +116,7 @@ const ball = {
         }
     },
     draw: function() {
-        if (mode !== "EDITOR" && !this.in_hole && !this.is_moving() && mousePos) {
+        if (mode == "GAME" && !this.in_hole && !this.is_moving() && mousePos) {
             const diff = { x: this.position.x - mousePos.x, y: this.position.y - mousePos.y }
             ctx.lineWidth = 3;
             ctx.strokeStyle = "rgba(0,0,0,0.5)";
@@ -179,7 +179,7 @@ function draw() {
         }
     }
 
-    if (mode === "GAME") {
+    if (mode == "GAME") {
         for (let block of level.blocks) {
             ctx.fillStyle = Colors.WALL;
             ctx.fillRect(block.position.x * TILE_SIZE, block.position.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -190,7 +190,7 @@ function draw() {
     ball.update();
     ball.draw();
 
-    if (mode === "EDITOR") {
+    if (mode == "EDITOR") {
         if (tilePos) {
             ctx.fillStyle = "rgba(0,0,0,0.6)";
             ctx.fillRect(tilePos.x * TILE_SIZE, tilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -200,6 +200,28 @@ function draw() {
             ctx.fillStyle = Colors[block.type.toUpperCase()];
             ctx.fillRect(block.position.x * TILE_SIZE, block.position.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
+
+        // console.log(editorHold);
+        if (editorHold == "add") {
+            if ((tilePos && editorLastTilePos) && editorLastTilePos.x != tilePos.x || editorLastTilePos.y != tilePos.y) {
+                for (let block of level.blocks) {
+                    if (tilePos.x === block.position.x && tilePos.y === block.position.y) {
+                        break;
+                    }
+                }
+
+                level.blocks.push({
+                    position: { x: tilePos.x, y: tilePos.y },
+                    type: editorType,
+                });
+            }
+        } else if (editorHold == "remove") {
+            if ((tilePos && editorLastTilePos) && editorLastTilePos.x != tilePos.x || editorLastTilePos.y != tilePos.y) {
+                level.blocks = level.blocks.filter(block => tilePos.x != block.position.x || tilePos.y != block.position.y);
+            }
+        }
+
+        editorLastTilePos = tilePos;
     }
 
     setTimeout(() => {
@@ -219,49 +241,44 @@ function getMousePosition(e) {
 
 document.addEventListener("mousemove", (e) => {
     mousePos = getMousePosition(e);
-
-    if (mode === "EDITOR") {
-        const mousePos = getMousePosition(e);
-        const newTilePos = {
-            x: Math.floor(mousePos.x / TILE_SIZE),
-            y: Math.floor(mousePos.y / TILE_SIZE)
-        };
-
-        if ((!tilePos || tilePos.x !== newTilePos.x || tilePos.y !== newTilePos.y) 
-            && newTilePos.x >= 0 && newTilePos.x < WIDTH / TILE_SIZE
-            && newTilePos.y >= 0 && newTilePos.y < HEIGHT / TILE_SIZE) {
-            tilePos = newTilePos;
-        }
-    }
-});
-
-document.addEventListener("click", (e) => {
-    ball.move(getMousePosition(e));
+    const newTilePos = {
+        x: Math.floor(mousePos.x / TILE_SIZE),
+        y: Math.floor(mousePos.y / TILE_SIZE)
+    };
     
-    if (mode === "EDITOR") {
-        for (let block of level.blocks) {
-            if (tilePos.x === block.position.x && tilePos.y === block.position.y) {
-                return;
-            }
-        }
-
-        level.blocks.push({
-            position: { x: tilePos.x, y: tilePos.y },
-            type: editorType,
-        });
+    if ((!tilePos || tilePos.x !== newTilePos.x || tilePos.y !== newTilePos.y) 
+        && newTilePos.x >= 0 && newTilePos.x < WIDTH / TILE_SIZE
+        && newTilePos.y >= 0 && newTilePos.y < HEIGHT / TILE_SIZE) {
+        tilePos = newTilePos;
     }
 });
 
-document.addEventListener("contextmenu", (e) => {
+document.addEventListener("mousedown", (e) => {
     e.preventDefault();
-
-    if (mode === "EDITOR") {
-        level.blocks = level.blocks.filter(block => tilePos.x != block.position.x || tilePos.y != block.position.y);
-    }
+    mousePos = getMousePosition(e)
+    ball.move(mousePos);
 });
 
-document.addEventListener("keypress", e => {
-    if (mode === "EDITOR") {
+document.addEventListener("mouseup", (e) => {
+    ball.move(getMousePosition(e));
+});
+
+if (mode === "EDITOR") {
+    document.addEventListener("mousedown", () => {
+        const isThereABlock = level.blocks.find(block => tilePos.x == block.position.x && tilePos.y == block.position.y);
+        editorHold = isThereABlock ? "remove" : "add";
+        editorLastTilePos = { x: -1, y: -1 };
+    });
+
+    document.addEventListener("mouseup", () => {
+        editorHold = null;
+    });
+    
+    document.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+    });
+    
+    document.addEventListener("keypress", e => {
         switch (e.key) {
         case "w":
             editorType = "Wall";
@@ -283,5 +300,5 @@ document.addEventListener("keypress", e => {
             });
             break;
         }
-    }
-})
+    })
+}
