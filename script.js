@@ -165,6 +165,8 @@ const hole = {
 
 function start() {
     canvas = document.querySelector("canvas");
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
     if (canvas.getContext) ctx = canvas.getContext("2d");
     window.requestAnimationFrame(draw);
 }
