@@ -70,9 +70,9 @@ const ball = {
     color: "white",
     velocity: { x: 0, y: 0 },
     friction: 0.95,
-    top_speed: 40,
+    top_speed: 30,
     in_hole: false,
-    update: function () {
+    update: function() {
         if (mode === "EDITOR") return;
         this.velocity.x *= this.friction;
         this.velocity.y *= this.friction;
@@ -88,21 +88,21 @@ const ball = {
             this.position.y -= this.velocity.y;
             this.velocity.y *= -1;
         }
-        
+
         for (let block of level.blocks) {
-            if (this.position.x > block.position.x * TILE_SIZE - this.radius && 
+            if (this.position.x > block.position.x * TILE_SIZE - this.radius &&
                 this.position.x < block.position.x * TILE_SIZE + TILE_SIZE + this.radius &&
-                this.position.y > block.position.y * TILE_SIZE - this.radius && 
+                this.position.y > block.position.y * TILE_SIZE - this.radius &&
                 this.position.y < block.position.y * TILE_SIZE + TILE_SIZE + this.radius) {
-                    this.position.x -= this.velocity.x;
-                    this.position.y -= this.velocity.y;
-                    if (this.position.x < block.position.x * TILE_SIZE - this.radius ||
-                        this.position.x > block.position.x * TILE_SIZE + TILE_SIZE + this.radius)
-                            this.velocity.x *= -1;
-                    if (this.position.y < block.position.y * TILE_SIZE - this.radius ||
-                        this.position.y > block.position.y * TILE_SIZE + TILE_SIZE + this.radius)
-                            this.velocity.y *= -1;
-                }
+                this.position.x -= this.velocity.x;
+                this.position.y -= this.velocity.y;
+                if (this.position.x < block.position.x * TILE_SIZE - this.radius ||
+                    this.position.x > block.position.x * TILE_SIZE + TILE_SIZE + this.radius)
+                    this.velocity.x *= -1;
+                if (this.position.y < block.position.y * TILE_SIZE - this.radius ||
+                    this.position.y > block.position.y * TILE_SIZE + TILE_SIZE + this.radius)
+                    this.velocity.y *= -1;
+            }
         }
 
         if (this.position.x > hole.position.x - 20
@@ -110,9 +110,9 @@ const ball = {
             && this.position.y > hole.position.y - 20
             && this.position.y < hole.position.y + 20
             && this.magnitude() < 10) {
-                this.velocity = { x: 0, y: 0 };
-                this.position = hole.position;
-                this.in_hole = true;
+            this.velocity = { x: 0, y: 0 };
+            this.position = hole.position;
+            this.in_hole = true;
         }
     },
     draw: function() {
@@ -139,7 +139,7 @@ const ball = {
     },
     move: function({ x, y }) {
         if (this.in_hole || this.is_moving()) return;
-        const diff = { x: this.position.x - x, y:  this.position.y - y };
+        const diff = { x: this.position.x - x, y: this.position.y - y };
         this.velocity = { x: diff.x * 0.15, y: diff.y * 0.15 };
         const magnitude = this.magnitude();
         if (magnitude > this.top_speed) {
@@ -247,8 +247,8 @@ document.addEventListener("mousemove", (e) => {
         x: Math.floor(mousePos.x / TILE_SIZE),
         y: Math.floor(mousePos.y / TILE_SIZE)
     };
-    
-    if ((!tilePos || tilePos.x !== newTilePos.x || tilePos.y !== newTilePos.y) 
+
+    if ((!tilePos || tilePos.x !== newTilePos.x || tilePos.y !== newTilePos.y)
         && newTilePos.x >= 0 && newTilePos.x < WIDTH / TILE_SIZE
         && newTilePos.y >= 0 && newTilePos.y < HEIGHT / TILE_SIZE) {
         tilePos = newTilePos;
@@ -275,35 +275,35 @@ if (mode === "EDITOR") {
     document.addEventListener("mouseup", () => {
         editorHold = null;
     });
-    
+
     document.addEventListener("contextmenu", (e) => {
         e.preventDefault();
     });
-    
+
     document.addEventListener("keypress", e => {
         switch (e.key) {
-        case "w":
-            editorType = "Wall";
-            break;
-        case "b":
-            editorType = "Ball";
-            break;
-        case "h":
-            editorType = "Hole";
-            break;
-        case "r":
-            level.blocks = [];
-            break;
-        case "s":
-            fetch("http://localhost:8081/level", {
-                method: "POST",
-                mode: "cors",
-                body: JSON.stringify(level),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            break;
+            case "w":
+                editorType = "Wall";
+                break;
+            case "b":
+                editorType = "Ball";
+                break;
+            case "h":
+                editorType = "Hole";
+                break;
+            case "r":
+                level.blocks = [];
+                break;
+            case "s":
+                fetch("http://localhost:8081/level", {
+                    method: "POST",
+                    mode: "cors",
+                    body: JSON.stringify(level),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+                break;
         }
     })
 }
